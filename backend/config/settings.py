@@ -82,7 +82,7 @@ if _database_url:
         "default": dj_database_url.config(
             default=_database_url,
             conn_max_age=600,
-            ssl_require=os.getenv("DATABASE_SSL_REQUIRE", "true").lower() == "true",
+            ssl_require=os.getenv("DATABASE_SSL_REQUIRE", "false").lower() == "true",
         )
     }
 elif os.getenv("USE_MYSQL", "false").lower() == "true":

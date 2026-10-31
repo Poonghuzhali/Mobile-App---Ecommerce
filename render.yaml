@@ -14,12 +14,10 @@ services:
     runtime: python
     plan: free
     rootDir: backend
-    buildCommand: >-
-      pip install -r requirements.txt &&
-      python manage.py migrate --noinput &&
-      python manage.py collectstatic --no-input
-    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
-    healthCheckPath: /api/catalog/home/
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    preDeployCommand: python manage.py migrate --noinput
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+    healthCheckPath: /api/health/
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.7"
@@ -31,6 +29,8 @@ services:
         fromDatabase:
           name: vexo-cart-db
           property: connectionString
+      - key: DATABASE_SSL_REQUIRE
+        value: "false"
       - key: CORS_ALLOW_ALL
         value: "True"
       - key: RAZORPAY_TEST_MODE_ONLY
