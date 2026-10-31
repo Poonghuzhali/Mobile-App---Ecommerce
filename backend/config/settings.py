@@ -82,15 +82,10 @@ if _database_url:
         "default": dj_database_url.config(
             default=_database_url,
             conn_max_age=600,
-            ssl_require=False,
+            ssl_require=os.getenv("DATABASE_SSL_REQUIRE", "true").lower() == "true",
         )
     }
 elif os.getenv("USE_MYSQL", "false").lower() == "true":
-    USE_MYSQL = True
-else:
-    USE_MYSQL = False
-
-elif USE_MYSQL:
     import pymysql
 
     pymysql.install_as_MySQLdb()
@@ -105,7 +100,7 @@ elif USE_MYSQL:
             "OPTIONS": {"charset": "utf8mb4"},
         }
     }
-elif not _database_url:
+else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -132,7 +127,13 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    "staticfiles": {
+        "BACKEND": (
+            "whitenoise.storage.CompressedStaticFilesStorage"
+            if not DEBUG
+            else "django.contrib.staticfiles.storage.StaticFilesStorage"
+        )
+    },
 }
 
 MEDIA_URL = os.getenv("MEDIA_URL", "/media/")

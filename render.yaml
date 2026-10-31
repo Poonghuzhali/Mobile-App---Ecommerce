@@ -16,8 +16,8 @@ services:
     rootDir: backend
     buildCommand: >-
       pip install -r requirements.txt &&
-      python manage.py collectstatic --no-input &&
-      python manage.py migrate --noinput
+      python manage.py migrate --noinput &&
+      python manage.py collectstatic --no-input
     startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     healthCheckPath: /api/catalog/home/
     envVars:
@@ -31,6 +31,8 @@ services:
         fromDatabase:
           name: vexo-cart-db
           property: connectionString
+      - key: CORS_ALLOW_ALL
+        value: "True"
       - key: RAZORPAY_TEST_MODE_ONLY
         value: "True"
       - key: RESEND_API_KEY
