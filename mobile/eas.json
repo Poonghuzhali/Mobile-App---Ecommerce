@@ -12,7 +12,7 @@
     },
     "preview": {
       "distribution": "internal",
-      "android": { "buildType": "apk" },
+      "android": { "buildType": "apk", "image": "latest" },
       "ios": { "simulator": false },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://vexo-cart-api.onrender.com/api"

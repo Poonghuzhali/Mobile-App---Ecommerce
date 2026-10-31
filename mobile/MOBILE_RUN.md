@@ -41,6 +41,19 @@ npx expo start -c
 
 Reload the app in Expo Go after changing the URL.
 
+## Expo dashboard: “Deploy failed” (18s)
+
+That usually means Expo ran from the **repo root**, but the app is in **`mobile/`**.
+
+1. Open [GitHub settings for the project](https://expo.dev/accounts/poonghuzhalis-team/projects/luxecart-ecommerce/github).
+2. Set **Base directory** to: `mobile`
+3. For an **APK**, use **Builds → Build from GitHub** (profile **`preview`**), not **Deploy** (Deploy is for web/hosting/OTA release pipelines).
+4. Or run locally once (creates Android keystore): `npm run build:apk` → **Yes** to generate keystore.
+
+Workflow file: `mobile/.eas/workflows/android-apk-preview.yml` (APK on push to `main` when `mobile/**` changes).
+
+---
+
 ## Standalone Android APK (EAS Build — uses Render API)
 
 The APK talks to **`https://vexo-cart-api.onrender.com/api`** by default (see `eas.json` → `preview` profile). Change that URL if your Render service has a different hostname.

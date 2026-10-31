@@ -1,0 +1,20 @@
+# Build installable Android APK (preview profile → Render API).
+# In Expo: Project → GitHub → set Base directory to `mobile`.
+# Trigger: push to main (mobile changes) or Run workflow from Expo dashboard.
+
+name: Android APK (preview)
+
+on:
+  push:
+    branches: ['main']
+    paths:
+      - 'mobile/**'
+  workflow_dispatch:
+
+jobs:
+  build_android:
+    name: Build APK
+    type: build
+    params:
+      platform: android
+      profile: preview
