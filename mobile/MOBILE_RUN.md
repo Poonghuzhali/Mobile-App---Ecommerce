@@ -41,18 +41,37 @@ npx expo start -c
 
 Reload the app in Expo Go after changing the URL.
 
-## Standalone installs (optional — EAS Build)
+## Standalone Android APK (EAS Build — uses Render API)
 
-Login: `npx eas-cli login`
+The APK talks to **`https://vexo-cart-api.onrender.com/api`** by default (see `eas.json` → `preview` profile). Change that URL if your Render service has a different hostname.
 
-| Target | Command |
-|--------|---------|
-| **Android APK** (share/install) | `npx eas build -p android --profile preview` |
-| **iOS** (TestFlight / device) | `npx eas build -p ios --profile preview` |
+1. Deploy backend on Render and run once in Shell: `python manage.py seed_demo`
+2. Set Render env vars: `RESEND_*`, `RAZORPAY_*` (see root README)
+3. Login (once): `npx eas-cli login`
+4. Build APK in the cloud:
 
-Download builds from the [Expo project page](https://expo.dev/accounts/poonghuzhalis-team/projects/luxecart-ecommerce).
+```powershell
+cd mobile
+npm install
+npm run build:apk
+```
 
-**Note:** iOS native builds require an Apple Developer account; iOS **Expo Go** testing does not.
+5. When the build finishes, open the link in the terminal or [Expo builds](https://expo.dev/accounts/poonghuzhalis-team/projects/luxecart-ecommerce/builds) → **Download** the `.apk`
+6. Copy the APK to your phone and install (allow “Install unknown apps” if prompted)
+
+| Profile | Command | Output |
+|---------|---------|--------|
+| **preview** (recommended) | `npm run build:apk` | Installable **APK** |
+| **production-apk** | `npm run build:apk:prod` | APK with version auto-increment |
+
+**Custom API URL for a build:** edit `EXPO_PUBLIC_API_URL` in `eas.json` under the profile’s `env`, or:
+
+```powershell
+$env:EXPO_PUBLIC_API_URL="https://your-service.onrender.com/api"
+npx eas build -p android --profile preview
+```
+
+**Note:** iOS store builds need an Apple Developer account; use **Expo Go** for iOS dev testing.
 
 ## App identifiers
 

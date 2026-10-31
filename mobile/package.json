@@ -27,15 +27,19 @@
     "react-native-webview": "14.0.1",
     "zustand": "^5.0.16"
   },
-  "devDependencies": {
-    "@types/react": "~19.3.0",
-    "typescript": "~6.0.3"
-  },
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build:apk": "eas build -p android --profile preview",
+    "build:apk:ci": "eas build -p android --profile preview --non-interactive",
+    "build:apk:prod": "eas build -p android --profile production-apk"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "@types/react": "~19.3.0",
+    "eas-cli": "^16.0.0",
+    "typescript": "~6.0.3"
+  }
 }

@@ -18,9 +18,21 @@ function parseHostFromExpo(): string | undefined {
   return host;
 }
 
-function resolveDevApiHost(): string {
-  const fromEnv = process.env.EXPO_PUBLIC_API_URL;
+/** Default Render API from render.yaml service name `vexo-cart-api`. Override via EXPO_PUBLIC_API_URL. */
+const DEFAULT_PRODUCTION_API = 'https://vexo-cart-api.onrender.com/api';
+
+function resolveApiBaseUrl(): string {
+  const fromEnv = process.env.EXPO_PUBLIC_API_URL?.trim();
   if (fromEnv) return fromEnv.replace(/\/$/, '');
+
+  const fromExtra = Constants.expoConfig?.extra?.apiUrl;
+  if (typeof fromExtra === 'string' && fromExtra.trim()) {
+    return fromExtra.trim().replace(/\/$/, '');
+  }
+
+  if (!__DEV__) {
+    return DEFAULT_PRODUCTION_API.replace(/\/$/, '');
+  }
 
   const lanHost = parseHostFromExpo();
   if (lanHost) {
@@ -34,11 +46,12 @@ function resolveDevApiHost(): string {
   return 'http://127.0.0.1:8000/api';
 }
 
-export const API_BASE_URL = resolveDevApiHost();
+export const API_BASE_URL = resolveApiBaseUrl();
 
 export const APP_NAME = 'Vexo Cart';
 
 /** Shown when the app cannot reach Django from a physical device. */
-export const API_CONNECT_HINT =
-  'Start the backend with: python manage.py runserver 0.0.0.0:8000 — phone and PC on same Wi‑Fi. ' +
-  'If it still fails, set EXPO_PUBLIC_API_URL=http://YOUR_PC_IP:8000/api and restart Expo.';
+export const API_CONNECT_HINT = __DEV__
+  ? 'Start the backend with: python manage.py runserver 0.0.0.0:8000 — phone and PC on same Wi‑Fi. ' +
+    'If it still fails, set EXPO_PUBLIC_API_URL=http://YOUR_PC_IP:8000/api and restart Expo.'
+  : `Cannot reach the server at ${API_BASE_URL}. Check Render is running and run seed_demo on the server.`;

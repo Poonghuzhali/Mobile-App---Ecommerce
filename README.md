@@ -79,6 +79,18 @@ This is **not** a browser storefront. Run on device or emulator:
 
 Optional: from repo root, `.\start-dev.ps1` starts the API and Expo together.
 
+### Deploy backend (Render) + Android APK (Expo EAS)
+
+1. **Render:** connect this repo → Blueprint uses root `render.yaml` → set `RESEND_*` and `RAZORPAY_*` in the service Environment → Shell: `python manage.py seed_demo`.
+2. **APK:** see [mobile/MOBILE_RUN.md](mobile/MOBILE_RUN.md). From `mobile/`:
+   ```powershell
+   npx eas-cli login
+   npm run build:apk
+   ```
+   First build asks to **generate an Android keystore** — choose Yes (Expo stores it). When finished, download the `.apk` from [Expo builds](https://expo.dev/accounts/poonghuzhalis-team/projects/luxecart-ecommerce/builds).
+
+   Default API in release builds: `https://vexo-cart-api.onrender.com/api` (edit `eas.json` if your Render URL differs).
+
 ## Demo flow
 
 1. Register in the app: enter email → **Send OTP** → enter code from email (or console) → complete signup.
