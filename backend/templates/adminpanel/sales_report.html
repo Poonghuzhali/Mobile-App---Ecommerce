@@ -1,0 +1,18 @@
+{% extends "adminpanel/base.html" %}
+{% block content %}
+<h1>Sales report</h1>
+<section class="panel">
+  <h2>By status</h2>
+  <table>
+    <thead><tr><th>Status</th><th>Orders</th><th>Revenue</th></tr></thead>
+    <tbody>{% for row in by_status %}<tr><td>{{ row.status }}</td><td>{{ row.count }}</td><td>₹{{ row.revenue }}</td></tr>{% endfor %}</tbody>
+  </table>
+</section>
+<section class="panel">
+  <h2>Recent transactions</h2>
+  <table>
+    <thead><tr><th>Order</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+    <tbody>{% for o in orders %}<tr><td>{{ o.order_number }}</td><td>₹{{ o.total }}</td><td>{{ o.status }}</td><td>{{ o.created_at }}</td></tr>{% endfor %}</tbody>
+  </table>
+</section>
+{% endblock %}

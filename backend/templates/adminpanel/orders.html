@@ -1,0 +1,27 @@
+{% extends "adminpanel/base.html" %}
+{% block content %}
+<h1>Orders</h1>
+<form method="get" class="inline-form">
+  <select name="status" onchange="this.form.submit()">
+    <option value="">All statuses</option>
+    {% for value, label in status_choices %}
+    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+</form>
+<table>
+  <thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Payment</th><th>Total</th><th>Date</th></tr></thead>
+  <tbody>
+    {% for o in orders %}
+    <tr>
+      <td><a href="{% url 'adminpanel_order_detail' o.pk %}">{{ o.order_number }}</a></td>
+      <td>{{ o.user.email }}</td>
+      <td>{{ o.get_status_display }}</td>
+      <td>{{ o.get_payment_method_display }}</td>
+      <td>₹{{ o.total }}</td>
+      <td>{{ o.created_at|date:"M d, Y H:i" }}</td>
+    </tr>
+    {% empty %}<tr><td colspan="6">No orders</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% endblock %}

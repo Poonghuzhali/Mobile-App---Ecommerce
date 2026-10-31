@@ -1,0 +1,38 @@
+{% extends "adminpanel/base.html" %}
+{% block title %}Dashboard — {{ APP_NAME }}{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<div class="stat-grid">
+  <article class="stat"><span>Total sales</span><strong>₹{{ stats.total_sales }}</strong></article>
+  <article class="stat"><span>Orders</span><strong>{{ stats.order_count }}</strong></article>
+  <article class="stat"><span>Customers</span><strong>{{ stats.customer_count }}</strong></article>
+  <article class="stat warn"><span>Low stock</span><strong>{{ stats.low_stock }}</strong></article>
+</div>
+<section class="panel">
+  <h2>Last 7 days</h2>
+  <table>
+    <thead><tr><th>Date</th><th>Orders</th><th>Revenue</th></tr></thead>
+    <tbody>
+      {% for row in daily_sales %}
+      <tr><td>{{ row.day }}</td><td>{{ row.count }}</td><td>₹{{ row.total }}</td></tr>
+      {% empty %}<tr><td colspan="3">No data yet</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+<section class="panel">
+  <h2>Recent orders</h2>
+  <table>
+    <thead><tr><th>#</th><th>Customer</th><th>Status</th><th>Total</th></tr></thead>
+    <tbody>
+      {% for o in recent_orders %}
+      <tr>
+        <td><a href="{% url 'adminpanel_order_detail' o.pk %}">{{ o.order_number }}</a></td>
+        <td>{{ o.user.email }}</td>
+        <td>{{ o.get_status_display }}</td>
+        <td>₹{{ o.total }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

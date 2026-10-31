@@ -1,0 +1,17 @@
+{% extends "adminpanel/base.html" %}
+{% block content %}
+<h1>Customers</h1>
+<table>
+  <thead><tr><th>Name</th><th>Email</th><th>Orders</th><th>Joined</th></tr></thead>
+  <tbody>
+    {% for c in customers %}
+    <tr>
+      <td><a href="{% url 'adminpanel_customer_detail' c.pk %}">{{ c.get_full_name|default:c.username }}</a></td>
+      <td>{{ c.email }}</td>
+      <td>{{ c.order_count }}</td>
+      <td>{{ c.date_joined|date:"M d, Y" }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

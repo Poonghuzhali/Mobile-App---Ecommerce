@@ -1,0 +1,5 @@
+{% extends "adminpanel/base.html" %}
+{% block content %}
+<h1>{% if product %}Edit{% else %}New{% endif %} product</h1>
+<form method="post" class="form-card">{% csrf_token %}{{ form.as_p }}<button type="submit">Save</button></form>
+{% endblock %}

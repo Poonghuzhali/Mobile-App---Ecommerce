@@ -1,0 +1,13 @@
+{% extends "adminpanel/base.html" %}
+{% block title %}Admin Login — {{ APP_NAME }}{% endblock %}
+{% block content %}
+<section class="login-card">
+  <h1>Admin sign in</h1>
+  <form method="post">
+    {% csrf_token %}
+    <label>Username<input name="username" required /></label>
+    <label>Password<input name="password" type="password" required /></label>
+    <button type="submit">Login</button>
+  </form>
+</section>
+{% endblock %}

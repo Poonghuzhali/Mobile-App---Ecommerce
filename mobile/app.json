@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Vexo Cart",
+    "slug": "luxecart-ecommerce",
+    "owner": "poonghuzhalis-team",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "luxecart",
+    "userInterfaceStyle": "light",
+    "platforms": ["ios", "android"],
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#DCDADE"
+    },
+    "ios": {
+      "bundleIdentifier": "com.poonghuzhalis.luxecart",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSAllowsLocalNetworking": true
+        }
+      }
+    },
+    "android": {
+      "package": "com.poonghuzhalis.luxecart",
+      "adaptiveIcon": {
+        "backgroundColor": "#DCDADE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": true,
+      "usesCleartextTraffic": true
+    },
+    "plugins": ["expo-image"],
+    "extra": {
+      "eas": {
+        "projectId": "f142aab5-04cc-48ca-858f-608d99506e3f"
+      }
+    }
+  }
+}

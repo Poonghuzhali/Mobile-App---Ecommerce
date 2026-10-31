@@ -1,0 +1,22 @@
+{% extends "adminpanel/base.html" %}
+{% block content %}
+<h1>{{ order.order_number }}</h1>
+<p>Customer: {{ order.user.email }} · Total: ₹{{ order.total }}</p>
+<section class="panel">
+  <h2>Update status</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <label>Message to customer<input name="message" /></label>
+    <button type="submit">Save</button>
+  </form>
+</section>
+<section class="panel">
+  <h2>Items</h2>
+  <ul>{% for i in order.items.all %}<li>{{ i.product_name }} × {{ i.quantity }} — ₹{{ i.line_total }}</li>{% endfor %}</ul>
+</section>
+<section class="panel">
+  <h2>Tracking timeline</h2>
+  <ul>{% for h in order.status_history.all %}<li>{{ h.created_at|date:"M d H:i" }} — {{ h.get_status_display }} — {{ h.message }}</li>{% endfor %}</ul>
+</section>
+{% endblock %}

@@ -1,0 +1,26 @@
+Hello{% if user.first_name %} {{ user.first_name }}{% endif %},
+
+Thank you for shopping with {{ app_name }}. Your order is confirmed.
+
+Order number: {{ order.order_number }}
+Placed on: {{ order.created_at|date:"d M Y, H:i" }} (IST)
+Payment: {{ order.get_payment_method_display }} — {{ order.get_payment_status_display }}
+
+Items:
+{% for item in items %}
+  • {{ item.product_name }} × {{ item.quantity }} — ₹{{ item.line_total }}
+{% endfor %}
+
+Subtotal: ₹{{ order.subtotal }}
+Shipping: ₹{{ order.shipping_fee }}
+Total: ₹{{ order.total }}
+
+Shipping to:
+{{ order.shipping_address.full_name }}
+{{ order.shipping_address.line1 }}{% if order.shipping_address.line2 %}, {{ order.shipping_address.line2 }}{% endif %}
+{{ order.shipping_address.city }}, {{ order.shipping_address.state }} {{ order.shipping_address.postal_code }}
+Phone: {{ order.shipping_address.phone }}
+
+Track your order in the {{ app_name }} app under Profile → Orders.
+
+— {{ app_name }}

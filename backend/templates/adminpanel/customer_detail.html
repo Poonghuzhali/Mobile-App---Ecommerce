@@ -1,0 +1,7 @@
+{% extends "adminpanel/base.html" %}
+{% block content %}
+<h1>{{ customer.email }}</h1>
+<p>{{ customer.phone }} · Joined {{ customer.date_joined|date:"M d, Y" }}</p>
+<h2>Orders</h2>
+<ul>{% for o in orders %}<li><a href="{% url 'adminpanel_order_detail' o.pk %}">{{ o.order_number }}</a> — ₹{{ o.total }}</li>{% empty %}<li>No orders</li>{% endfor %}</ul>
+{% endblock %}
