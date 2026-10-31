@@ -1,0 +1,43 @@
+# Render Blueprint — deploy Django API + PostgreSQL
+# Dashboard: New → Blueprint → connect repo → Apply
+# Docs: https://render.com/docs/blueprint-spec
+
+databases:
+  - name: vexo-cart-db
+    plan: free
+    databaseName: vexocart
+    user: vexocart
+
+services:
+  - type: web
+    name: vexo-cart-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      python manage.py collectstatic --no-input &&
+      python manage.py migrate --noinput
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    healthCheckPath: /api/catalog/home/
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vexo-cart-db
+          property: connectionString
+      - key: RAZORPAY_TEST_MODE_ONLY
+        value: "True"
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false

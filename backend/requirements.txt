@@ -8,3 +8,7 @@ pillow>=11.0
 python-dotenv>=1.0
 resend>=2.0
 razorpay>=1.4
+gunicorn>=23.0
+whitenoise>=6.8
+dj-database-url>=2.2
+psycopg2-binary>=2.9

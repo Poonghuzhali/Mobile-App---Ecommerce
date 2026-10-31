@@ -10,8 +10,19 @@ load_dotenv(BASE_DIR / ".env", override=True)
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-key-change-in-production")
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,10.0.2.2").split(",") if h.strip()]
+_render_host = os.getenv("RENDER_EXTERNAL_HOSTNAME", "").strip()
+if _render_host and _render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_render_host)
 if DEBUG and os.getenv("ALLOWED_HOSTS") is None:
     ALLOWED_HOSTS = ["*"]
+
+CSRF_TRUSTED_ORIGINS = [
+    o.strip()
+    for o in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if o.strip()
+]
+if _render_host:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{_render_host}")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -33,6 +44,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -62,8 +74,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-USE_MYSQL = os.getenv("USE_MYSQL", "false").lower() == "true"
-if USE_MYSQL:
+_database_url = os.getenv("DATABASE_URL", "").strip()
+if _database_url:
+    import dj_database_url
+
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=_database_url,
+            conn_max_age=600,
+            ssl_require=False,
+        )
+    }
+elif os.getenv("USE_MYSQL", "false").lower() == "true":
+    USE_MYSQL = True
+else:
+    USE_MYSQL = False
+
+elif USE_MYSQL:
     import pymysql
 
     pymysql.install_as_MySQLdb()
@@ -78,7 +105,7 @@ if USE_MYSQL:
             "OPTIONS": {"charset": "utf8mb4"},
         }
     }
-else:
+elif not _database_url:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -103,13 +130,17 @@ USE_TZ = True
 STATIC_URL = os.getenv("STATIC_URL", "/static/")
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+}
 
 MEDIA_URL = os.getenv("MEDIA_URL", "/media/")
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CORS_ALLOW_ALL_ORIGINS = DEBUG
+CORS_ALLOW_ALL_ORIGINS = DEBUG or os.getenv("CORS_ALLOW_ALL", "").lower() == "true"
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8081",
     "http://127.0.0.1:8081",
