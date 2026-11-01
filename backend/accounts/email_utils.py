@@ -10,16 +10,20 @@ def _clean(value: str) -> str:
 
 
 def get_resend_config() -> tuple[str, str]:
-    """Resend key/from from process env (Render) or backend/.env (local)."""
-    env_path = Path(settings.BASE_DIR) / ".env"
-    if env_path.is_file():
-        load_dotenv(env_path, override=True)
-    key = _clean(os.getenv("RESEND_API_KEY", ""))
+    """Resend key/from — process env (Render) first, then Django settings, then backend/.env."""
+    key = _clean(os.environ.get("RESEND_API_KEY", ""))
+    from_email = _clean(os.environ.get("RESEND_FROM_EMAIL", ""))
     if not key:
         key = _clean(getattr(settings, "RESEND_API_KEY", ""))
-    from_email = _clean(os.getenv("RESEND_FROM_EMAIL", "")) or _clean(
-        getattr(settings, "RESEND_FROM_EMAIL", "")
-    )
+    if not from_email:
+        from_email = _clean(getattr(settings, "RESEND_FROM_EMAIL", ""))
+    env_path = Path(settings.BASE_DIR) / ".env"
+    if env_path.is_file():
+        load_dotenv(env_path, override=False)
+        if not key:
+            key = _clean(os.getenv("RESEND_API_KEY", ""))
+        if not from_email:
+            from_email = _clean(os.getenv("RESEND_FROM_EMAIL", ""))
     if not from_email:
         from_email = f"{settings.APP_DISPLAY_NAME} <onboarding@resend.dev>"
     return key, from_email

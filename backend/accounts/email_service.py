@@ -18,16 +18,20 @@ def _from_email() -> str:
 
 def _send_via_resend(*, api_key: str, from_email: str, subject: str, text: str, to_email: str) -> None:
     import resend
+    from resend.exceptions import ResendError
 
     resend.api_key = api_key
-    resend.Emails.send(
-        {
-            "from": from_email,
-            "to": [to_email],
-            "subject": subject,
-            "text": text,
-        }
-    )
+    try:
+        resend.Emails.send(
+            {
+                "from": from_email,
+                "to": [to_email],
+                "subject": subject,
+                "text": text,
+            }
+        )
+    except ResendError as exc:
+        raise RuntimeError(f"Resend rejected the email: {exc}") from exc
 
 
 def send_email(*, subject: str, message: str, to_email: str) -> None:

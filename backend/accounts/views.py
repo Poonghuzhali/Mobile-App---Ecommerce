@@ -11,9 +11,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from catalog.models import Product
-from .models import Address, PasswordResetToken, WishlistItem
+from .models import Address, EmailOTP, PasswordResetToken, WishlistItem
 from .email_service import send_password_reset, send_registration_otp
-from .email_utils import delivery_mode, resend_configured, smtp_configured, uses_console_email_backend
+from .email_utils import delivery_mode, get_resend_config, resend_configured, smtp_configured, uses_console_email_backend
 from .otp import create_and_store_otp
 from .serializers import (
     AddressSerializer,
@@ -29,6 +29,32 @@ User = get_user_model()
 
 class EmailOrUsernameTokenObtainPairView(TokenObtainPairView):
     serializer_class = EmailOrUsernameTokenObtainPairSerializer
+
+
+class EmailStatusView(APIView):
+    """Public check that Render sees email config (no secrets)."""
+
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        key, from_email = get_resend_config()
+        otp_db = "ok"
+        try:
+            EmailOTP.objects.exists()
+        except Exception as exc:
+            otp_db = str(exc)
+        return Response(
+            {
+                "delivery": delivery_mode(),
+                "resend_configured": bool(key),
+                "from_email": from_email if key else None,
+                "otp_database": otp_db,
+                "resend_test_sender_note": (
+                    "With onboarding@resend.dev, mail only reaches the email on your Resend account "
+                    "until you verify a domain at resend.com/domains."
+                ),
+            }
+        )
 
 
 class RegisterSendOtpView(APIView):
@@ -50,7 +76,17 @@ class RegisterSendOtpView(APIView):
                 },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
-        code = create_and_store_otp(email)
+        try:
+            code = create_and_store_otp(email)
+        except Exception as exc:
+            logging.getLogger(__name__).exception("OTP storage failed for %s", email)
+            return Response(
+                {
+                    "detail": "Could not save OTP. On Render Shell run: python manage.py migrate",
+                    "error": str(exc),
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         console_mode = uses_console_email_backend()
         try:
             send_registration_otp(to_email=email, otp_code=code)
@@ -75,10 +111,11 @@ class RegisterSendOtpView(APIView):
         except Exception as exc:
             logging.getLogger(__name__).exception("OTP email failed for %s", email)
             hint = (
-                "Check RESEND_API_KEY and RESEND_FROM_EMAIL in backend/.env. "
-                "With onboarding@resend.dev you can only send to your Resend account email until you verify a domain."
+                "Check RESEND_API_KEY and RESEND_FROM_EMAIL on Render (Environment). "
+                "With onboarding@resend.dev you can only send to your Resend signup email until you verify a domain. "
+                "See https://vexo-cart-api.onrender.com/api/auth/email-status/"
                 if resend_configured()
-                else "See backend/EMAIL_SETUP.md and restart Django."
+                else "Set RESEND_API_KEY on Render, redeploy, then try again."
             )
             return Response(
                 {"detail": f"Could not send email. {hint}", "error": str(exc)},

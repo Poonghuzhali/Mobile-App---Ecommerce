@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     AddressDetailView,
     AddressListCreateView,
+    EmailStatusView,
     ForgotPasswordView,
     LogoutView,
     ProfileView,
@@ -13,6 +14,7 @@ from .views import (
 )
 
 urlpatterns = [
+    path("email-status/", EmailStatusView.as_view()),
     path("register/send-otp/", RegisterSendOtpView.as_view()),
     path("register/", RegisterView.as_view()),
     path("logout/", LogoutView.as_view()),
