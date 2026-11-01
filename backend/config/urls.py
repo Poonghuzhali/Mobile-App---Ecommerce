@@ -5,9 +5,10 @@ from django.urls import include, path
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from accounts.views import EmailOrUsernameTokenObtainPairView
-from config.health import health
+from config.health import health, root
 
 urlpatterns = [
+    path("", root),
     path("api/health/", health),
     path("django-admin/", admin.site.urls),
     path("portal/", include("adminpanel.urls")),
