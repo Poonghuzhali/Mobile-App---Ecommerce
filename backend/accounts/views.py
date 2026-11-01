@@ -13,7 +13,14 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from catalog.models import Product
 from .models import Address, EmailOTP, PasswordResetToken, WishlistItem
 from .email_service import send_password_reset, send_registration_otp
-from .email_utils import delivery_mode, get_resend_config, resend_configured, smtp_configured, uses_console_email_backend
+from .email_utils import (
+    delivery_configured,
+    delivery_mode,
+    get_resend_config,
+    resend_configured,
+    smtp_configured,
+    uses_console_email_backend,
+)
 from .otp import create_and_store_otp
 from .serializers import (
     AddressSerializer,
