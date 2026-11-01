@@ -38,6 +38,18 @@ class RegisterSendOtpView(APIView):
         serializer = RegisterSendOtpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]
+        if not delivery_configured() and not settings.DEBUG:
+            return Response(
+                {
+                    "detail": (
+                        "Email is not configured on the server. Add RESEND_API_KEY and RESEND_FROM_EMAIL "
+                        "in Render → vexo-cart-api → Environment, then redeploy. "
+                        "With onboarding@resend.dev, OTP only delivers to your Resend account email until you verify a domain."
+                    ),
+                    "delivery": "none",
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         code = create_and_store_otp(email)
         console_mode = uses_console_email_backend()
         try:

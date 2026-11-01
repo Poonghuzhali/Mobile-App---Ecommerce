@@ -10,7 +10,7 @@ def _clean(value: str) -> str:
 
 
 def get_resend_config() -> tuple[str, str]:
-    """Resend key/from from backend/.env (reloaded so OTP works after .env edits without restart)."""
+    """Resend key/from from process env (Render) or backend/.env (local)."""
     env_path = Path(settings.BASE_DIR) / ".env"
     if env_path.is_file():
         load_dotenv(env_path, override=True)
