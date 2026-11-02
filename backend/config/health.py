@@ -1,3 +1,5 @@
+import os
+
 from django.http import JsonResponse
 
 
@@ -11,6 +13,7 @@ def root(_request):
     return JsonResponse(
         {
             "app": "Vexo Cart API",
+            "deploy_commit": os.environ.get("RENDER_GIT_COMMIT", "").strip() or None,
             "message": "Backend is running. Use the mobile app or links below.",
             "links": {
                 "health": "/api/health/",
