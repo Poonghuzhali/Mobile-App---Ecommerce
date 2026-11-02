@@ -3,7 +3,7 @@ import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { CompositeScreenProps, useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { api, getErrorMessage } from '../../api/client';
 import type { Banner, Category, Product } from '../../api/types';
 import { BannerCarousel } from '../../components/BannerCarousel';
@@ -12,7 +12,7 @@ import { ProductCard } from '../../components/ProductCard';
 import { Screen } from '../../components/Screen';
 import { ErrorView } from '../../components/ui/StateViews';
 import { ProductGridSkeleton } from '../../components/ui/Shimmer';
-import { APP_NAME } from '../../config';
+import { API_BASE_URL, APP_NAME } from '../../config';
 import { RootStackParamList, TabParamList } from '../../navigation/types';
 import { colors, flexScroll, scrollIndicatorHidden, spacing, typography } from '../../theme';
 
@@ -35,9 +35,15 @@ export function HomeScreen({ navigation }: Props) {
       const { data } = await api.get<{ banners: Banner[]; categories: Category[]; featured_products: Product[] }>(
         '/catalog/home/',
       );
-      setBanners(data.banners);
-      setCategories(data.categories);
-      setFeatured(data.featured_products);
+      setBanners(data.banners ?? []);
+      setCategories(data.categories ?? []);
+      const featuredList = data.featured_products ?? [];
+      if (featuredList.length === 0) {
+        const { data: page } = await api.get<{ results?: Product[] }>('/catalog/products/', { params: { page_size: 8 } });
+        setFeatured(page.results ?? []);
+      } else {
+        setFeatured(featuredList);
+      }
     } catch (e) {
       setError(getErrorMessage(e, 'Could not load home'));
     } finally {
@@ -78,17 +84,30 @@ export function HomeScreen({ navigation }: Props) {
               }}
             />
             <Text style={styles.section}>Featured</Text>
-            <ScrollView {...scrollIndicatorHidden} horizontal style={styles.featuredScroll} contentContainerStyle={styles.featuredRow}>
-              {featured.map((item, index) => (
-                <View key={item.id} style={styles.featuredCard}>
-                  <ProductCard
-                    product={item}
-                    index={index}
-                    onPress={() => navigation.navigate('ProductDetail', { productId: item.id })}
-                  />
-                </View>
-              ))}
-            </ScrollView>
+            {featured.length === 0 ? (
+              <Text style={styles.emptyFeatured}>
+                No products loaded. Server: {API_BASE_URL}. Wait ~30s if Render was asleep, then tap Retry above.
+              </Text>
+            ) : (
+              <FlatList
+                horizontal
+                nestedScrollEnabled
+                data={featured}
+                keyExtractor={(item) => String(item.id)}
+                showsHorizontalScrollIndicator={false}
+                style={styles.featuredScroll}
+                contentContainerStyle={styles.featuredRow}
+                renderItem={({ item, index }) => (
+                  <View style={styles.featuredCard}>
+                    <ProductCard
+                      product={item}
+                      index={index}
+                      onPress={() => navigation.navigate('ProductDetail', { productId: item.id })}
+                    />
+                  </View>
+                )}
+              />
+            )}
             <Pressable style={styles.seeAll} onPress={() => navigation.navigate('ProductList', { title: 'All products' })}>
               <Text style={styles.seeAllText}>Browse all products</Text>
               <Ionicons name="arrow-forward" size={16} color={colors.primary} />
@@ -151,4 +170,5 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   seeAllText: { color: colors.primary, fontWeight: '600', fontSize: 14 },
+  emptyFeatured: { color: colors.textMuted, fontSize: 13, lineHeight: 20, marginBottom: spacing.md },
 });

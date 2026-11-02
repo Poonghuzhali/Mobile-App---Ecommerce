@@ -1,8 +1,10 @@
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { CompositeScreenProps, useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { CommonActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { LoadingView } from '../../components/ui/StateViews';
+import { navigationRef } from '../../navigation/navigationRef';
 import { RootStackParamList, TabParamList } from '../../navigation/types';
 
 type Props = CompositeScreenProps<
@@ -10,11 +12,17 @@ type Props = CompositeScreenProps<
   NativeStackScreenProps<RootStackParamList>
 >;
 
-export function ShopScreen({ navigation }: Props) {
+export function ShopScreen(_props: Props) {
   useFocusEffect(
     useCallback(() => {
-      navigation.getParent()?.navigate('ProductList', { title: 'All products' });
-    }, [navigation]),
+      if (!navigationRef.isReady()) return;
+      navigationRef.dispatch(
+        CommonActions.navigate({
+          name: 'ProductList',
+          params: { title: 'All products' },
+        }),
+      );
+    }, []),
   );
 
   return <LoadingView message="Opening shop…" />;

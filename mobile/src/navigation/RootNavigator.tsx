@@ -11,6 +11,7 @@ import { colors } from '../theme';
 import { getActiveTabFromState, navigationRef } from './navigationRef';
 import { RootStackParamList } from './types';
 import { AppMainTabs } from './AppMainTabs';
+import { AdminTabs } from './AdminTabs';
 import { ProductListScreen } from '../screens/shop/ProductListScreen';
 import { ProductDetailScreen } from '../screens/product/ProductDetailScreen';
 import { SearchScreen } from '../screens/search/SearchScreen';
@@ -61,9 +62,9 @@ export function RootNavigator() {
   const authHydrated = useAuthStore((s) => s.isHydrated);
   const cartHydrated = useCartStore((s) => s.isHydrated);
   const accessToken = useAuthStore((s) => s.accessToken);
-  const isStaff = useAuthStore((s) => s.user?.is_staff === true);
   const setUser = useAuthStore((s) => s.setUser);
   const [activeTab, setActiveTab] = useState<TabKey>('Home');
+  const [hideFooter, setHideFooter] = useState(false);
   useEffect(() => {
     useAuthStore.getState().setHydrated();
     useCartStore.getState().setHydrated();
@@ -78,8 +79,6 @@ export function RootNavigator() {
   }, [authHydrated, accessToken, setUser]);
 
   const hydrated = authHydrated && cartHydrated;
-  const staffMode = Boolean(accessToken && isStaff);
-
   if (!hydrated) {
     return <BootScreen />;
   }
@@ -92,18 +91,24 @@ export function RootNavigator() {
         if (navigationRef.isReady()) {
           const state = navigationRef.getRootState();
           setActiveTab(getActiveTabFromState(state));
+          const route = state.routes[state.index ?? 0];
+          setHideFooter(route?.name === 'StaffPortal');
         }
       }}
       onStateChange={() => {
         if (navigationRef.isReady()) {
-          setActiveTab(getActiveTabFromState(navigationRef.getRootState()));
+          const state = navigationRef.getRootState();
+          setActiveTab(getActiveTabFromState(state));
+          const route = state.routes[state.index ?? 0];
+          setHideFooter(route?.name === 'StaffPortal');
         }
       }}
     >
-      <View style={[styles.root, staffMode && styles.rootStaff]}>
+      <View style={styles.root}>
         <View style={styles.stackArea}>
           <Stack.Navigator screenOptions={stackScreenOptions}>
             <Stack.Screen name="MainTabs" component={AppMainTabs} options={{ headerShown: false }} />
+            <Stack.Screen name="StaffPortal" component={AdminTabs} options={{ headerShown: false, title: 'Staff portal' }} />
             <Stack.Screen name="ProductList" component={ProductListScreen} options={({ route }) => ({ title: route.params.title ?? 'Shop' })} />
             <Stack.Screen name="ProductDetail" component={ProductDetailScreen} options={{ title: 'Product' }} />
             <Stack.Screen name="Search" component={SearchScreen} options={{ title: 'Search' }} />
@@ -119,7 +124,7 @@ export function RootNavigator() {
             <Stack.Screen name="AdminOrderManage" component={AdminOrderManageScreen} options={{ title: 'Update order' }} />
           </Stack.Navigator>
         </View>
-        {!staffMode ? <PersistentFooter activeTab={activeTab} /> : null}
+        {!hideFooter ? <PersistentFooter activeTab={activeTab} /> : null}
       </View>
     </NavigationContainer>
   );
@@ -127,7 +132,6 @@ export function RootNavigator() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
-  rootStaff: { backgroundColor: colors.bgDeep },
   stackArea: { flex: 1, minHeight: 0 },
   boot: { flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', gap: 12 },
   bootText: { color: colors.textMuted, fontSize: 15 },

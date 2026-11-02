@@ -6,7 +6,6 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Screen } from '../../components/Screen';
 import { RootStackParamList } from '../../navigation/types';
-import { resetToStaffHome } from '../../utils/authNavigation';
 import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
 import { useWishlistStore } from '../../store/wishlistStore';
@@ -38,12 +37,8 @@ export function LoginScreen({ navigation }: Props) {
       setTokens(tokens.access, tokens.refresh);
       const { data: profile } = await api.get('/auth/profile/');
       setUser(profile);
-      if (profile.is_staff) {
-        resetToStaffHome();
-      } else {
-        await Promise.all([fetchCart(), fetchWishlist()]);
-        navigation.goBack();
-      }
+      await Promise.all([fetchCart(), fetchWishlist()]);
+      navigation.goBack();
     } catch (e) {
       setError(getErrorMessage(e, 'Login failed'));
     } finally {
@@ -56,7 +51,7 @@ export function LoginScreen({ navigation }: Props) {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView {...scrollIndicatorHidden} contentContainerStyle={styles.form}>
           <Text style={styles.sub}>
-            Customers: sign in with your account. Staff: username admin, password Admin@12345 — opens the staff portal (like /portal/ on web).
+            Sign in to shop and track orders. Staff: use Profile → Staff portal after login (admin / Admin@12345).
           </Text>
           <Input
             label="Email or username"

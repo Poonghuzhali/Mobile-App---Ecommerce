@@ -10,7 +10,9 @@ import { Button } from '../../components/ui/Button';
 import { ErrorView, LoadingView } from '../../components/ui/StateViews';
 import { AdminTabParamList } from '../../navigation/types';
 import { useAuthStore } from '../../store/authStore';
+import { navigationRef } from '../../navigation/navigationRef';
 import { resetToCustomerHome } from '../../utils/authNavigation';
+import { CommonActions } from '@react-navigation/native';
 import { colors, flexScroll, radius, scrollIndicatorHidden, spacing } from '../../theme';
 
 type Props = BottomTabScreenProps<AdminTabParamList, 'AdminDashboard'>;
@@ -99,6 +101,15 @@ export function AdminPanelScreen({ navigation }: Props) {
         <QuickTile icon="cube-outline" title="Inventory & stock" onPress={() => navigation.navigate('AdminInventory')} />
         <QuickTile icon="people-outline" title="Customers" onPress={() => navigation.navigate('AdminCustomers')} />
         <QuickTile icon="person-outline" title="Account & sign out" onPress={() => navigation.navigate('AdminAccount')} />
+        <QuickTile
+          icon="storefront-outline"
+          title="Back to store (products)"
+          onPress={() => {
+            if (navigationRef.isReady()) {
+              navigationRef.dispatch(CommonActions.navigate({ name: 'MainTabs', params: { screen: 'Home' } }));
+            }
+          }}
+        />
         {recentOrders.length > 0 ? (
           <>
             <Text style={styles.section}>Recent orders</Text>

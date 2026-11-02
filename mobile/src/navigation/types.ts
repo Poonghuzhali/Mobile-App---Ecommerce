@@ -1,7 +1,6 @@
 export type RootStackParamList = {
-  MainTabs:
-    | { screen?: keyof TabParamList | keyof AdminTabParamList }
-    | undefined;
+  MainTabs: { screen?: keyof TabParamList } | undefined;
+  StaffPortal: undefined;
   ProductDetail: { productId: number };
   ProductList: { categoryId?: number; title?: string };
   Search: undefined;

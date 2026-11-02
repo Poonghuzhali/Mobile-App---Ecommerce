@@ -12,6 +12,8 @@ import { Input } from '../../components/ui/Input';
 import { ErrorView, LoadingView } from '../../components/ui/StateViews';
 import { RootStackParamList, TabParamList } from '../../navigation/types';
 import { useAuthStore } from '../../store/authStore';
+import { openStaffPortal } from '../../utils/authNavigation';
+import { API_BASE_URL } from '../../config';
 import { colors, flexScroll, radius, scrollIndicatorHidden, spacing } from '../../theme';
 
 type Props = CompositeScreenProps<
@@ -101,6 +103,9 @@ export function ProfileScreen({ navigation }: Props) {
           <Input label="Phone" value={form.phone ?? ''} onChangeText={(v) => setForm((f) => ({ ...f, phone: v }))} />
           <Button title="Save profile" onPress={saveProfile} loading={saving} />
         </View>
+        {user?.is_staff ? (
+          <MenuRow icon="shield-outline" label="Staff portal" onPress={() => openStaffPortal()} />
+        ) : null}
         <MenuRow icon="location-outline" label="Addresses" onPress={() => navigation.navigate('Addresses')} />
         <MenuRow icon="notifications-outline" label="Notifications" onPress={() => navigation.navigate('Notifications')} />
         <Text style={styles.section}>Order history</Text>
@@ -110,6 +115,7 @@ export function ProfileScreen({ navigation }: Props) {
             <Text style={styles.orderMeta}>{o.status} · ₹{o.total}</Text>
           </Pressable>
         ))}
+        <Text style={styles.apiHint}>Store API: {API_BASE_URL}</Text>
         <Button title="Logout" variant="danger" onPress={doLogout} style={{ marginTop: spacing.lg }} />
       </ScrollView>
     </Screen>
@@ -158,4 +164,5 @@ const styles = StyleSheet.create({
   },
   orderId: { color: colors.text, fontWeight: '700' },
   orderMeta: { color: colors.textMuted, marginTop: 4, textTransform: 'capitalize' },
+  apiHint: { color: colors.textDim, fontSize: 11, marginTop: spacing.md, lineHeight: 16 },
 });

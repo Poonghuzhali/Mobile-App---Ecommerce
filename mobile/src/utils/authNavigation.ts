@@ -11,12 +11,7 @@ export function resetToCustomerHome() {
   );
 }
 
-export function resetToStaffHome() {
+export function openStaffPortal() {
   if (!navigationRef.isReady()) return;
-  navigationRef.dispatch(
-    CommonActions.reset({
-      index: 0,
-      routes: [{ name: 'MainTabs', params: { screen: 'AdminDashboard' } }],
-    }),
-  );
+  navigationRef.dispatch(CommonActions.navigate({ name: 'StaffPortal' }));
 }
