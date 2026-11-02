@@ -2,6 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { api, getErrorMessage } from '../../api/client';
+import { API_BASE_URL } from '../../config';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Screen } from '../../components/Screen';
@@ -32,7 +33,7 @@ export function RegisterScreen({ navigation }: Props) {
   const sendOtp = async () => {
     setError('');
     setOtpMessage('');
-    const email = form.email.trim();
+    const email = form.email.trim().toLowerCase();
     if (!email) {
       setError('Enter your email first.');
       return;
@@ -81,7 +82,10 @@ export function RegisterScreen({ navigation }: Props) {
   return (
     <Screen title="Create account">
       <ScrollView {...scrollIndicatorHidden} style={flexScroll} contentContainerStyle={styles.form}>
-        <Text style={styles.hint}>We verify your email with a one-time code before creating your account.</Text>
+        <Text style={styles.hint}>
+          One-time code is sent from {API_BASE_URL.replace('/api', '')}. If you use Resend test sender, enter the same
+          email as your Resend account (or verify a domain on Resend). Wrong address shows an error — not “sent”.
+        </Text>
         <Input label="Email" keyboardType="email-address" autoCapitalize="none" value={form.email} onChangeText={set('email')} />
         <View style={styles.otpRow}>
           <View style={{ flex: 1 }}>

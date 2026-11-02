@@ -4,6 +4,7 @@ import smtplib
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.views.generic import TemplateView
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,7 +18,10 @@ from .email_utils import (
     delivery_configured,
     delivery_mode,
     get_resend_config,
+    get_resend_signup_email,
     resend_configured,
+    resend_recipient_allowed,
+    resend_uses_test_sender,
     smtp_configured,
     uses_console_email_backend,
 )
@@ -38,6 +42,10 @@ class EmailOrUsernameTokenObtainPairView(TokenObtainPairView):
     serializer_class = EmailOrUsernameTokenObtainPairSerializer
 
 
+class PublicRegisterPageView(TemplateView):
+    template_name = "accounts/register.html"
+
+
 class EmailStatusView(APIView):
     """Public check that Render sees email config (no secrets)."""
 
@@ -50,12 +58,25 @@ class EmailStatusView(APIView):
             EmailOTP.objects.exists()
         except Exception as exc:
             otp_db = str(exc)
+        signup = get_resend_signup_email()
         return Response(
             {
                 "delivery": delivery_mode(),
                 "resend_configured": bool(key),
                 "from_email": from_email if key else None,
                 "otp_database": otp_db,
+                "resend_test_sender": resend_uses_test_sender() if key else False,
+                "resend_signup_email_set": bool(signup),
+                "otp_recipient_hint": (
+                    f"OTP delivers only to {signup} until you verify a domain on Resend."
+                    if key and resend_uses_test_sender() and signup
+                    else (
+                        "Set RESEND_SIGNUP_EMAIL on Render to your Resend login email, then register with that address."
+                        if key and resend_uses_test_sender()
+                        else None
+                    )
+                ),
+                "register_web": "/register/",
                 "resend_test_sender_note": (
                     "With onboarding@resend.dev, mail only reaches the email on your Resend account "
                     "until you verify a domain at resend.com/domains."
@@ -71,6 +92,12 @@ class RegisterSendOtpView(APIView):
         serializer = RegisterSendOtpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]
+        ok_recipient, recipient_msg = resend_recipient_allowed(email)
+        if not ok_recipient:
+            return Response(
+                {"detail": recipient_msg, "delivery": "resend", "resend_test_sender": True},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if not delivery_configured() and not settings.DEBUG:
             return Response(
                 {
@@ -117,15 +144,22 @@ class RegisterSendOtpView(APIView):
             )
         except Exception as exc:
             logging.getLogger(__name__).exception("OTP email failed for %s", email)
-            hint = (
-                "Check RESEND_API_KEY and RESEND_FROM_EMAIL on Render (Environment). "
-                "With onboarding@resend.dev you can only send to your Resend signup email until you verify a domain. "
-                "See https://vexo-cart-api.onrender.com/api/auth/email-status/"
-                if resend_configured()
-                else "Set RESEND_API_KEY on Render, redeploy, then try again."
-            )
+            err_text = str(exc)
+            if "Invalid `to` field" in err_text or "only send to your own email" in err_text.lower():
+                detail = (
+                    "Resend rejected this address. With onboarding@resend.dev you must register using the "
+                    "same email as your Resend account. On Render set RESEND_SIGNUP_EMAIL to that address, "
+                    "or verify a domain at resend.com/domains and update RESEND_FROM_EMAIL."
+                )
+            elif resend_configured():
+                detail = (
+                    "Could not send email. Check RESEND_API_KEY on Render and "
+                    "https://vexo-cart-api.onrender.com/api/auth/email-status/"
+                )
+            else:
+                detail = "Set RESEND_API_KEY on Render, redeploy, then try again."
             return Response(
-                {"detail": f"Could not send email. {hint}", "error": str(exc)},
+                {"detail": detail, "error": err_text, "delivery": delivery_mode()},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
 

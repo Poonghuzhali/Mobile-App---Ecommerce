@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create account — Vexo Cart</title>
+  <style>
+    :root { --bg: #0f1419; --card: #1a2332; --text: #e7ecf3; --muted: #8b9bb4; --accent: #3b82f6; --err: #f87171; --ok: #4ade80; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; padding: 24px 16px; }
+    .wrap { max-width: 420px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; margin: 0 0 8px; }
+    .sub { color: var(--muted); font-size: 0.9rem; line-height: 1.45; margin-bottom: 20px; }
+    .card { background: var(--card); border-radius: 12px; padding: 20px; }
+    label { display: block; font-size: 0.85rem; color: var(--muted); margin: 12px 0 4px; }
+    input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #2d3a4f; background: #0f1419; color: var(--text); }
+    .row { display: flex; gap: 8px; align-items: flex-end; }
+    .row input { flex: 1; }
+    button { margin-top: 16px; width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
+    button.secondary { width: auto; margin-top: 0; padding: 10px 14px; background: #2d3a4f; }
+    button:disabled { opacity: 0.6; cursor: wait; }
+    .msg { margin-top: 12px; font-size: 0.9rem; line-height: 1.4; }
+    .msg.err { color: var(--err); white-space: pre-wrap; }
+    .msg.ok { color: var(--ok); white-space: pre-wrap; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Create account</h1>
+    <p class="sub" id="hint">Loading email settings…</p>
+    <div class="card">
+      <label>Email</label>
+      <input id="email" type="email" autocomplete="email" required />
+      <div class="row">
+        <div style="flex:1">
+          <label>6-digit OTP</label>
+          <input id="otp" inputmode="numeric" maxlength="6" placeholder="From your inbox" />
+        </div>
+        <button type="button" class="secondary" id="sendOtp">Send OTP</button>
+      </div>
+      <label>Username</label>
+      <input id="username" autocomplete="username" required />
+      <label>First name</label>
+      <input id="first_name" />
+      <label>Last name</label>
+      <input id="last_name" />
+      <label>Phone</label>
+      <input id="phone" type="tel" />
+      <label>Password</label>
+      <input id="password" type="password" autocomplete="new-password" required />
+      <label>Confirm password</label>
+      <input id="password_confirm" type="password" autocomplete="new-password" required />
+      <button type="button" id="submit">Create account</button>
+      <p class="msg" id="status"></p>
+    </div>
+    <p class="sub" style="margin-top:16px"><a href="/">API home</a> · <a href="/portal/login/">Staff login</a></p>
+  </div>
+  <script>
+    const api = (path, opts) => fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+    const statusEl = document.getElementById('status');
+    const hintEl = document.getElementById('hint');
+    let otpSent = false;
+
+    function show(text, ok) {
+      statusEl.textContent = text;
+      statusEl.className = 'msg ' + (ok ? 'ok' : 'err');
+    }
+
+    async function loadEmailHint() {
+      try {
+        const r = await api('/api/auth/email-status/');
+        const d = await r.json();
+        if (d.otp_recipient_hint) {
+          hintEl.textContent = d.otp_recipient_hint + ' Same rules apply in the mobile app.';
+        } else if (d.resend_test_sender) {
+          hintEl.textContent = 'Using Resend test sender: OTP only goes to your Resend account email until you verify a domain.';
+        } else {
+          hintEl.textContent = 'We email a one-time code to verify your address before signup.';
+        }
+      } catch {
+        hintEl.textContent = 'We email a one-time code to verify your address before signup.';
+      }
+    }
+
+    document.getElementById('sendOtp').onclick = async () => {
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      if (!email) { show('Enter your email first.', false); return; }
+      show('Sending…', true);
+      document.getElementById('sendOtp').disabled = true;
+      try {
+        const r = await api('/api/auth/register/send-otp/', { method: 'POST', body: JSON.stringify({ email }) });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.detail || d.error || r.statusText);
+        otpSent = true;
+        show(d.detail + (d.delivery === 'resend' ? ' Check inbox and spam.' : ''), true);
+      } catch (e) {
+        show(String(e.message || e), false);
+      } finally {
+        document.getElementById('sendOtp').disabled = false;
+      }
+    };
+
+    document.getElementById('submit').onclick = async () => {
+      if (!otpSent) { show('Send OTP to your email first.', false); return; }
+      const body = {
+        email: document.getElementById('email').value.trim().toLowerCase(),
+        otp: document.getElementById('otp').value.trim(),
+        username: document.getElementById('username').value.trim(),
+        first_name: document.getElementById('first_name').value.trim(),
+        last_name: document.getElementById('last_name').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        password: document.getElementById('password').value,
+        password_confirm: document.getElementById('password_confirm').value,
+      };
+      if (body.otp.length !== 6) { show('Enter the 6-digit code from your email.', false); return; }
+      show('Creating account…', true);
+      document.getElementById('submit').disabled = true;
+      try {
+        const r = await api('/api/auth/register/', { method: 'POST', body: JSON.stringify(body) });
+        const d = await r.json();
+        if (!r.ok) throw new Error(typeof d.detail === 'string' ? d.detail : JSON.stringify(d));
+        show('Account created. You can sign in in the Vexo Cart app.', true);
+      } catch (e) {
+        show(String(e.message || e), false);
+      } finally {
+        document.getElementById('submit').disabled = false;
+      }
+    };
+
+    loadEmailHint();
+  </script>
+</body>
+</html>

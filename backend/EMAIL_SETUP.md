@@ -8,8 +8,11 @@
 ```env
 RESEND_API_KEY=re_your_key_here
 RESEND_FROM_EMAIL=Vexo Cart <onboarding@resend.dev>
+RESEND_SIGNUP_EMAIL=you@example.com
 EMAIL_OTP_EXPIRE_MINUTES=10
 ```
+
+On **Render**, set the same three `RESEND_*` variables, then **Manual Deploy**. `RESEND_SIGNUP_EMAIL` must be the email you used at resend.com (the only inbox that receives OTP until you verify a domain).
 
 3. **Restart Django** after editing `.env`.
 4. Test:

@@ -5,7 +5,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / ".env", override=True)
+# Never override process env (Render sets RESEND_* here).
+load_dotenv(BASE_DIR / ".env", override=False)
 
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-key-change-in-production")
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
@@ -190,6 +191,8 @@ DEFAULT_FROM_EMAIL = _env_clean("DEFAULT_FROM_EMAIL")
 
 RESEND_API_KEY = _env_clean("RESEND_API_KEY")
 RESEND_FROM_EMAIL = _env_clean("RESEND_FROM_EMAIL") or f"{APP_DISPLAY_NAME} <onboarding@resend.dev>"
+# Email on your Resend account — required for OTP delivery while using onboarding@resend.dev.
+RESEND_SIGNUP_EMAIL = _env_clean("RESEND_SIGNUP_EMAIL").lower()
 
 _smtp_ready = bool(EMAIL_HOST and EMAIL_HOST_USER and EMAIL_HOST_PASSWORD)
 _resend_ready = bool(RESEND_API_KEY)

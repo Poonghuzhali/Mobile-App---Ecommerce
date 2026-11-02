@@ -2,9 +2,12 @@ import axios, { AxiosError } from 'axios';
 import { API_BASE_URL, API_CONNECT_HINT } from '../config';
 import { useAuthStore } from '../store/authStore';
 
+/** Render free tier can cold-start ~30–60s; production needs a longer timeout. */
+const API_TIMEOUT_MS = __DEV__ ? 15000 : 60000;
+
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000,
+  timeout: API_TIMEOUT_MS,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -51,7 +54,10 @@ export function getErrorMessage(error: unknown, fallback = 'Something went wrong
     const data = error.response?.data as Record<string, unknown> | string | undefined;
     if (typeof data === 'string') return data;
     if (data && typeof data === 'object') {
-      if (typeof data.detail === 'string') return data.detail;
+      if (typeof data.detail === 'string') {
+        const extra = typeof data.error === 'string' && !data.detail.includes(data.error) ? `\n\n${data.error}` : '';
+        return data.detail + extra;
+      }
       const first = Object.values(data)[0];
       if (Array.isArray(first) && first[0]) return String(first[0]);
       if (typeof first === 'string') return first;

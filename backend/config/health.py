@@ -14,6 +14,8 @@ def root(_request):
             "message": "Backend is running. Use the mobile app or links below.",
             "links": {
                 "health": "/api/health/",
+                "register": "/register/",
+                "email_status": "/api/auth/email-status/",
                 "catalog_home": "/api/catalog/home/",
                 "staff_portal": "/portal/",
                 "staff_login": "/portal/login/",

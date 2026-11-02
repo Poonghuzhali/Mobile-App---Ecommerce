@@ -53,3 +53,32 @@ def delivery_mode() -> str:
     if smtp_configured():
         return "smtp"
     return "console"
+
+
+def resend_uses_test_sender() -> bool:
+    _, from_email = get_resend_config()
+    return "onboarding@resend.dev" in from_email.lower()
+
+
+def get_resend_signup_email() -> str:
+    email = _clean(os.environ.get("RESEND_SIGNUP_EMAIL", ""))
+    if not email:
+        email = _clean(getattr(settings, "RESEND_SIGNUP_EMAIL", ""))
+    return email.strip().lower()
+
+
+def resend_recipient_allowed(to_email: str) -> tuple[bool, str | None]:
+    """With Resend test sender, OTP only reaches RESEND_SIGNUP_EMAIL (or any inbox after domain verify)."""
+    if not resend_configured() or not resend_uses_test_sender():
+        return True, None
+    allowed = get_resend_signup_email()
+    if not allowed:
+        return True, None
+    if to_email.strip().lower() == allowed:
+        return True, None
+    return False, (
+        f"While using onboarding@resend.dev, OTP is only sent to {allowed} "
+        f"(set RESEND_SIGNUP_EMAIL on Render to your Resend account email). "
+        f"You entered {to_email.strip().lower()}. To use any email, verify a domain at resend.com/domains "
+        f"and set RESEND_FROM_EMAIL to that domain."
+    )
