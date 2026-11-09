@@ -10,6 +10,7 @@ from config.health import api_root, health, root
 urlpatterns = [
     path("", root),
     path("register/", PublicRegisterPageView.as_view(), name="public_register"),
+    path("api", api_root),
     path("api/", api_root),
     path("api/health/", health),
     path("django-admin/", admin.site.urls),
