@@ -1,6 +1,6 @@
-# Render Blueprint — Django API on SQLite (persistent disk)
-# Dashboard: New → Blueprint → connect repo → Apply
-# Docs: https://render.com/docs/blueprint-spec
+# Render Blueprint — Django API on SQLite
+# Free tier: DB lives on the instance filesystem (re-seeded on deploy via seed_demo).
+# For long-lived data, upgrade the service and add a disk + SQLITE_DB_PATH=/var/data/db.sqlite3
 
 services:
   - type: web
@@ -11,10 +11,6 @@ services:
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
     startCommand: python manage.py migrate --noinput && python manage.py seed_demo && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --timeout 120
     healthCheckPath: /api/health/
-    disk:
-      name: vexo-cart-sqlite
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.7"
@@ -24,8 +20,6 @@ services:
         generateValue: true
       - key: USE_SQLITE
         value: "True"
-      - key: SQLITE_DB_PATH
-        value: "/var/data/db.sqlite3"
       - key: CORS_ALLOW_ALL
         value: "True"
       - key: RAZORPAY_TEST_MODE_ONLY
