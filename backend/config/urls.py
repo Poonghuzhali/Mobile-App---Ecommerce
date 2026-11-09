@@ -5,11 +5,12 @@ from django.urls import include, path
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from accounts.views import EmailOrUsernameTokenObtainPairView, PublicRegisterPageView
-from config.health import health, root
+from config.health import api_root, health, root
 
 urlpatterns = [
     path("", root),
     path("register/", PublicRegisterPageView.as_view(), name="public_register"),
+    path("api/", api_root),
     path("api/health/", health),
     path("django-admin/", admin.site.urls),
     path("portal/", include("adminpanel.urls")),
