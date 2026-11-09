@@ -165,8 +165,8 @@ class Command(BaseCommand):
             title="Summer Luxe Sale",
             defaults={
                 "subtitle": "Up to 40% off on featured picks",
-                "gradient_start": "#6366F1",
-                "gradient_end": "#EC4899",
+                "gradient_start": "#FF5C57",
+                "gradient_end": "#FFB020",
                 "link_category": categories["Fashion"],
                 "sort_order": 1,
             },
@@ -175,8 +175,8 @@ class Command(BaseCommand):
             title="Tech Essentials",
             defaults={
                 "subtitle": "Headphones, bands & more",
-                "gradient_start": "#0EA5E9",
-                "gradient_end": "#6366F1",
+                "gradient_start": "#E8443F",
+                "gradient_end": "#3D2C4E",
                 "link_category": categories["Electronics"],
                 "sort_order": 2,
             },

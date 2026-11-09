@@ -12,7 +12,7 @@
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#DCDADE"
+      "backgroundColor": "#FFF7F0"
     },
     "ios": {
       "bundleIdentifier": "com.poonghuzhalis.luxecart",
@@ -27,7 +27,7 @@
     "android": {
       "package": "com.poonghuzhalis.luxecart",
       "adaptiveIcon": {
-        "backgroundColor": "#DCDADE",
+        "backgroundColor": "#FFF7F0",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"

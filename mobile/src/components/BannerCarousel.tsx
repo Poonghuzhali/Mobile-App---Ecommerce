@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Banner } from '../api/types';
@@ -29,11 +30,19 @@ export function BannerCarousel({ banners, onPressCategory }: Props) {
           <Pressable
             key={b.id}
             onPress={() => b.category_id && onPressCategory?.(b.category_id)}
-            style={[styles.banner, shadow.card, { width, backgroundColor: colors.surfaceMuted }]}
+            style={[styles.banner, shadow.card, { width }]}
           >
-            <Text style={styles.kicker}>Collection</Text>
-            <Text style={styles.title}>{b.title}</Text>
-            <Text style={styles.sub}>{b.subtitle}</Text>
+            <LinearGradient
+              colors={[b.gradient_start || colors.primary, b.gradient_end || colors.accent]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+            <View style={styles.bannerInner}>
+              <Text style={styles.kicker}>Collection</Text>
+              <Text style={styles.title}>{b.title}</Text>
+              <Text style={styles.sub}>{b.subtitle}</Text>
+            </View>
           </Pressable>
         ))}
       </ScrollView>
@@ -48,16 +57,16 @@ export function BannerCarousel({ banners, onPressCategory }: Props) {
 
 const styles = StyleSheet.create({
   banner: {
-    height: 120,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    justifyContent: 'center',
+    height: 132,
+    borderRadius: radius.xl,
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: 'rgba(255,255,255,0.35)',
   },
-  kicker: { color: colors.textMuted, fontSize: 11, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase' },
-  title: { color: colors.text, fontSize: 22, fontWeight: '600', marginTop: 4 },
-  sub: { color: colors.textMuted, marginTop: 6, fontSize: 14 },
+  bannerInner: { flex: 1, padding: spacing.lg, justifyContent: 'center' },
+  kicker: { color: 'rgba(255,255,255,0.9)', fontSize: 11, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' },
+  title: { color: '#FFFFFF', fontSize: 22, fontWeight: '700', marginTop: 4 },
+  sub: { color: 'rgba(255,255,255,0.92)', marginTop: 6, fontSize: 14, fontWeight: '500' },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: spacing.sm },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.border },
   dotActive: { width: 18, backgroundColor: colors.primary },

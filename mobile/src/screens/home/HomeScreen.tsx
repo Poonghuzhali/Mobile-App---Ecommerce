@@ -62,7 +62,7 @@ export function HomeScreen({ navigation }: Props) {
       <ScrollView {...scrollIndicatorHidden} style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <View style={styles.topRow}>
           <View>
-            <Text style={typography.label}>Est. London</Text>
+            <Text style={typography.label}>New arrivals</Text>
             <Text style={typography.display}>{APP_NAME}</Text>
           </View>
           <Pressable style={styles.searchBtn} onPress={() => navigation.navigate('Search')}>

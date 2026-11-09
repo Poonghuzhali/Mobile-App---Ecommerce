@@ -76,7 +76,22 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 _database_url = os.getenv("DATABASE_URL", "").strip()
-if _database_url:
+_use_sqlite_env = os.getenv("USE_SQLITE", "").strip().lower()
+if _use_sqlite_env in ("true", "1", "yes"):
+    _use_sqlite = True
+elif _use_sqlite_env in ("false", "0", "no"):
+    _use_sqlite = False
+else:
+    _use_sqlite = not _database_url and os.getenv("USE_MYSQL", "false").lower() != "true"
+if _use_sqlite:
+    _sqlite_name = os.getenv("SQLITE_DB_PATH", "").strip()
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": Path(_sqlite_name) if _sqlite_name else BASE_DIR / "db.sqlite3",
+        }
+    }
+elif _database_url:
     import dj_database_url
 
     DATABASES = {
